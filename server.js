@@ -1,1 +1,18 @@
-const express = require('express');\nconst path = require('path');\nconst app = express();\nconst PORT = process.env.PORT || 3000;\n\napp.use(express.json());\napp.use(express.static('public'));\n\napp.get('/api/health', (req, res) => {\n  res.json({ status: 'ok', environment: process.env.NODE_ENV || 'development', timestamp: new Date().toISOString(), version: '1.0.0' });\n});\n\napp.get('/api/info', (req, res) => {\n  res.json({ app: 'DevOps Demo App', database: process.env.DATABASE_URL ? 'connected' : 'not configured', uptime: process.uptime(), node_version: process.version });\n});\n\napp.get('/api/environments', (req, res) => {\n  res.json({ current: process.env.NODE_ENV || 'development', available: ['canary','staging','demo','trial','production'] });\n});\n\napp.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+
+  const routes = {
+    '/api/health': { status: 'ok' },
+    '/api/info': { app: 'DevOps Demo App', version: '1.0.0', environment: 'production' },
+  };
+
+  const body = routes[req.url] || { error: 'not found' };
+  res.end(JSON.stringify(body));
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
